@@ -39,35 +39,38 @@ class MyApp extends StatelessWidget {
       ],
       theme: ThemeData(visualDensity: VisualDensity.adaptivePlatformDensity),
       home: splashScreen(),
-      onGenerateRoute: (settings) {
+      onGenerateRoute: (RouteSettings settings) {
         if (settings.name == Faculty.routeName) {
-          final args = settings.arguments as String;
-
           return MaterialPageRoute(
             builder: (context) {
               return Faculty(
-                universityId: args,
+                argments: {'universityId': settings.arguments},
               );
             },
           );
         }
-        if (settings.name == department.routeName) {
-          final argument = settings.arguments as String;
+        if (settings.name == Department.routeName) {
+
+         var universityId = settings.arguments.toString().split('universityId:')[1].split(',')[0].trim();
+         var collegeId = settings.arguments.toString().split('collegeId:')[1].split('}')[0].trim();
+
           return MaterialPageRoute(
             builder: (context) {
-              return department(
-                universityId: "1",
-                collegeId: "3",
+              return Department(
+                argments: {
+                  'universityId': universityId,
+                  'collegeId': collegeId,
+                },
               );
             },
           );
         }
       },
       routes: {
-        "home": (context) => home(),
-        "main": (context) => mainpage(),
-        "university": (context) => const University(),
-        "result": (context) => result(),
+        Home.routeName: (context) => Home(),
+        Mainpage.routeName: (context) => Mainpage(),
+        University.routeName: (context) => const University(),
+        Result.routeName: (context) => Result(),
         ContactUs.routeName: (context) => ContactUs(),
         finalmsg.routeName: (context) => finalmsg(),
       },

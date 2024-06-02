@@ -16,6 +16,7 @@ class _UniversityState extends State<University> {
   bool isLoading = true;
   bool hasError = false;
   List<QueryDocumentSnapshot> data = [];
+  var searchController = TextEditingController();
 
   @override
   void initState() {
@@ -37,95 +38,76 @@ class _UniversityState extends State<University> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Stack(
-                children: [
-                  Image.asset(
-                    "assets/images/university.png",
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                  const Positioned(
-                    bottom: 150,
-                    right: 20,
-                    child: Text(
-                      "قائمة الجامعات",
-                      style: TextStyle(fontSize: 28, color: Colors.white),
-                    ),
-                  ),
-                  Positioned(
-                    left: 10,
-                    top: 30,
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        size: 30,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  // Icon(Icons.arrow_back)
-                ],
-              ),
-            ],
-          ),
-          Positioned.fill(
-            child: Container(
-              height: 650,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : hasError
-                      ? const Center(
-                          child: Text("Something went errorrrrrrrrr"))
-                      : data.isEmpty
-                          ? const Text("List is empty")
-                          : getList(),
-            ),
-          )
-        ],
+      appBar: AppBar(
+        title: Text("الجامعات"),
       ),
+      body: Padding(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'ابحث عن جامعه',
+              ),
+              onChanged: (result){
+                setState(() {
+
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : hasError
+                ? const Center(child: Text("حدث خطأ"))
+                : data.isEmpty
+                ? const Text("لا يوجد")
+                : getList(),
+          ],
+        ),
+      )
     );
   }
 
   Widget getList() {
     ListView myList = ListView.separated(
+      shrinkWrap: true,
+      physics: BouncingScrollPhysics(),
       separatorBuilder: (context, index) => const SizedBox(height: 1),
       itemCount: data.length,
       itemBuilder: (context, index) {
         var university = data[index];
 
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: InkWell(
-            onTap: () => Navigator.pushNamed(context, Faculty.routeName,
-                arguments: university.reference.id),
-            child: Container(
-              width: 265,
-              height: 95,
+        final bool showItem =
+            searchController.text.isEmpty ||
+                university['name'].contains(
+                  searchController.text.toLowerCase(),
+                ) ||
+                university['name'].contains(
+                  searchController.text.toLowerCase(),
+                );
+
+        // Only show the item if it matches the search query
+        if (!showItem) return Container();
+
+        return InkWell(
+          onTap: () => Navigator.pushNamed(
+            context,
+            Faculty.routeName,
+            arguments: university.reference.id,
+          ),
+          child: Container(
+              margin: EdgeInsets.symmetric(vertical: 5),
               decoration: BoxDecoration(
                 color: const Color(0xff36265D),
-                borderRadius: BorderRadius.circular(23),
+                borderRadius: BorderRadius.circular(5),
               ),
-              child: Center(
-                child: Text(
-                  "${data[index]['name']}",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ),
+              child: ListTile(
+                textColor: Colors.white,
+                leading: Text("${index + 1}"),
+                title: Text("${university['name']}"),
+              )),
         );
       },
     );

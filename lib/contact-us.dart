@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:gradprojec/contact-model.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gradprojec/finalmsg.dart';
-import 'firebase_functions.dart';
+
+import 'custom_text_field.dart';
 
 class ContactUs extends StatefulWidget {
   static const String routeName = "contactUs";
@@ -13,11 +15,11 @@ class ContactUs extends StatefulWidget {
 }
 
 class _ContactUsState extends State<ContactUs> {
-  TextEditingController _name = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
-  TextEditingController _email = TextEditingController();
+  TextEditingController emailController = TextEditingController();
 
-  TextEditingController _phonenumber = TextEditingController();
+  TextEditingController contentController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -25,111 +27,99 @@ class _ContactUsState extends State<ContactUs> {
     return Scaffold(
 
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Color(0xff36265D),
         title: Text(
           "تواصل معانا",
-          style: TextStyle(fontSize: 30,color: Colors.white),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "الأسم ",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                  hintText: "من فضلك دخل اسمك",
-                  hintStyle: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                      color: Colors.grey),
-                  enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20))),
-              controller: _name,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "البريد الالكتروني الخاص بك",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomTextField(
+                controller: nameController,
+                title: "الأسم",
+                hint: "من فضلك ادخل اسمك",
+                validator: (String? v) {
+                  if (v.toString().isEmpty) {
+                    return 'مطلوب';
+                  }
+                  return null;
+                },
+              ),
+              CustomTextField(
+                controller: emailController,
+                title: "البريد الالكتروني",
+                hint: "من فضلك ادخل البريد الالكتروني الخاص بك",
+                validator: (String? v) {
+                  if (v.toString().isEmpty) {
+                    return 'مطلوب';
+                  }
+                  return null;
+                },
+              ),
+              CustomTextField(
+                controller: contentController,
+                title: "الاستفسار",
+                hint: "من فضلك وضح لنا استفسارك",
+                maxLines: 5,
+                validator: (String? v) {
+                  if (v.toString().isEmpty) {
+                    return 'مطلوب';
+                  }
+                  return null;
+                },
+              ),
+
+              Container(
                 width: double.infinity,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      hintText: "من فضلك دخل بريدك الالكتروني",
-                      hintStyle: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: Colors.grey),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20))),
-                  controller: _email,
-                )),
-            SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "ارسل لنا استفسارك ",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-                child: TextFormField(
-              decoration: InputDecoration(
-                  hintText: "من فضلك  ارسل الاستفسار",
-                  hintStyle: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                      color: Colors.grey),
-                  enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20))),
-              controller: _phonenumber,
-            )),
-            SizedBox(
-              height: 20,
-            ),
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xffF6CD2E),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:  BorderRadius.circular(5)
+                      )
+                    ),
+                    onPressed: () {
+                      saveContactUs();
+                    },
+                    child: const Text("ارسال")),
+              ),
 
-            Container(
-              width: double.infinity,
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xffF6CD2E),
-                  ),
-                  onPressed: () {
-                    try {
-                      // int phone = int.parse(_phonenumber.text);
-                      // ContactModel contact = ContactModel(
-                      //     name: _name.text, email: _email.text, phonenumber: phone);
-                      // firebaseFunctions.addcontact(contact);
-
-                      Navigator.pushNamed(context, finalmsg.routeName);
-                    } catch (e) {
-                      print(Text("Error :$e"));
-                    }
-                  },
-                  child: const Text("ارسال")),
-            ),
-            // ElevatedButton(
-            //     onPressed: () {
-            //       Navigator.pushNamed(context, AllPersonScreen.routeName);
-            //     },
-            //     child: const Text("get persons")),
-            // ElevatedButton(onPressed: (){
-            //   Navigator.pushNamed(context, SearchScreen.routeName);
-            // }, child: Text("Search for a person"))
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+  void saveContactUs() async {
+    CollectionReference collection =
+    FirebaseFirestore.instance.collection('ContactUs');
+
+    Map<String, dynamic> data = {
+      'name':nameController.text,
+      'email':emailController.text,
+      'content':contentController.text,
+    };
+
+    try {
+      DocumentReference docRef = await collection.add(data);
+      print('Document added with ID: ${docRef.id}');
+      Navigator.pop(context);
+      Fluttertoast.showToast(
+        msg: "تم ارسال استفسارك بنجاح سيقوم احد بالرد ع استفسارك في اقرب وقت ",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 18.0,
+      );
+
+
+    } catch (e) {
+      print('Error adding document: $e');
+    }
   }
 }

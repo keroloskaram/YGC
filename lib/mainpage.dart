@@ -4,10 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:gradprojec/home.dart';
 import 'extension.dart';
 
-class mainpage extends StatelessWidget {
+class Mainpage extends StatelessWidget {
   static const String routeName = "main";
 
-  mainpage({super.key});
+  Mainpage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class mainpage extends StatelessWidget {
                           padding: const EdgeInsets.all(12.0),
                           child: InkWell(
                               onTap: () {
-                                Navigator.pushNamed(context, home.routeName);
+                                Navigator.pushNamed(context, Home.routeName);
                               },
                               child: Text(
                                 "انضم الينا الان",
